@@ -1,0 +1,17 @@
+name = "adbot-cron"
+main = "src/index.ts"
+compatibility_date = "2025-03-28"
+workers_dev = false
+
+[triggers]
+crons = [
+  "0 * * * *",     # A1: rules evaluate (every hour)
+  "0 2 * * *",     # A3: daily summary (09:00 Bangkok = 02:00 UTC)
+  "0 3 * * 1",     # A5: token refresh (Monday 10:00 Bangkok = 03:00 UTC)
+]
+
+[vars]
+ADBOT_URL = "https://facebook-ad-scaler.pages.dev"
+
+# Secrets (set via: cd adbot-cron && wrangler secret put CRON_SECRET):
+# CRON_SECRET

@@ -1,0 +1,234 @@
+@import "tailwindcss";
+
+/* Self-hosted fonts per DESIGN spec §4 — DEVOPS delivered 2026-04-18 */
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter-variable.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'IBM Plex Sans Thai Looped';
+  src: url('/fonts/IBMPlexSansThaiLooped-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+02D7, U+0303, U+0331, U+0E01-0E5B, U+200C-200D, U+25CC;
+}
+@font-face {
+  font-family: 'IBM Plex Sans Thai Looped';
+  src: url('/fonts/IBMPlexSansThaiLooped-500.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+02D7, U+0303, U+0331, U+0E01-0E5B, U+200C-200D, U+25CC;
+}
+@font-face {
+  font-family: 'IBM Plex Sans Thai Looped';
+  src: url('/fonts/IBMPlexSansThaiLooped-600.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+02D7, U+0303, U+0331, U+0E01-0E5B, U+200C-200D, U+25CC;
+}
+@font-face {
+  font-family: 'IBM Plex Sans Thai Looped';
+  src: url('/fonts/IBMPlexSansThaiLooped-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+02D7, U+0303, U+0331, U+0E01-0E5B, U+200C-200D, U+25CC;
+}
+
+@theme {
+  --color-primary: #8b5cf6;
+  --color-primary-light: #a78bfa;
+  --color-primary-dark: #7c3aed;
+  --color-surface: #1e1e2e;
+  --color-surface-light: #2a2a3e;
+  --color-surface-lighter: #363650;
+  --color-bg: #11111b;
+  --color-text: #cdd6f4;
+  --color-text-muted: #6c7086;
+  --color-success: #a6e3a1;
+  --color-warning: #f9e2af;
+  --color-danger: #f38ba8;
+  --color-info: #89b4fa;
+  --font-docs: 'IBM Plex Sans Thai Looped', 'Inter', system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+* { scrollbar-width: thin; scrollbar-color: var(--color-surface-lighter) transparent; }
+
+/* Card hover animations */
+.bg-surface {
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+.bg-surface:hover {
+  box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.1), 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Table row hover */
+tr {
+  transition: background-color 0.15s ease;
+}
+
+/* Button press effect */
+button {
+  transition: transform 0.1s ease, opacity 0.15s ease;
+}
+button:active {
+  transform: scale(0.97);
+}
+
+/* Badge pulse for active status */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.animate-pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slide-up 0.25s ease-out;
+}
+
+/* Markdown content — /docs page prose styling (Tailwind v4, no typography plugin) */
+.markdown-content {
+  line-height: 1.75;
+  font-size: 15px;
+  color: var(--color-text);
+  font-family: var(--font-docs);
+  letter-spacing: 0;
+}
+.markdown-content > * + * { margin-top: 1rem; }
+.markdown-content h1 {
+  font-size: 2rem; font-weight: 700; margin-top: 0; margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem; border-bottom: 1px solid var(--color-surface-lighter);
+  scroll-margin-top: 5rem;
+}
+.markdown-content h2 {
+  font-size: 1.5rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 0.75rem;
+  padding-top: 0.5rem; scroll-margin-top: 5rem; color: var(--color-text);
+}
+.markdown-content h3 {
+  font-size: 1.15rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.5rem;
+  scroll-margin-top: 5rem; color: var(--color-text);
+}
+.markdown-content h2 a, .markdown-content h3 a, .markdown-content h1 a {
+  color: inherit; text-decoration: none;
+}
+.markdown-content h2:hover a::after, .markdown-content h3:hover a::after {
+  content: ' #'; color: var(--color-primary-light); font-weight: 400; opacity: 0.6;
+}
+.markdown-content p { margin: 0.75rem 0; }
+.markdown-content a:not(h1 a):not(h2 a):not(h3 a) {
+  color: var(--color-primary-light); text-decoration: underline; text-underline-offset: 2px;
+}
+.markdown-content a:hover { color: var(--color-primary); }
+.markdown-content ul, .markdown-content ol { padding-left: 1.5rem; margin: 0.75rem 0; }
+.markdown-content ul { list-style: disc; }
+.markdown-content ol { list-style: decimal; }
+.markdown-content li { margin: 0.35rem 0; }
+.markdown-content li > ul, .markdown-content li > ol { margin: 0.25rem 0; }
+.markdown-content strong { color: var(--color-text); font-weight: 600; }
+.markdown-content hr { margin: 2rem 0; border: 0; border-top: 1px solid var(--color-surface-lighter); }
+.markdown-content table {
+  width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 14px;
+}
+.markdown-content th, .markdown-content td {
+  border: 1px solid var(--color-surface-lighter); padding: 0.5rem 0.75rem; text-align: left;
+}
+.markdown-content th { background: var(--color-surface-light); font-weight: 600; }
+.markdown-content tbody tr:nth-child(even) { background: rgba(42, 42, 62, 0.4); }
+
+/* Mobile table — stack cells vertically per DESIGN backlog #2 */
+@media (max-width: 767px) {
+  .markdown-content table { display: block; }
+  .markdown-content thead { display: none; }
+  .markdown-content tbody { display: block; }
+  .markdown-content tbody tr {
+    display: block;
+    margin-bottom: 0.75rem;
+    border-left: 4px solid var(--color-surface-lighter);
+    border-top: 0; border-right: 0; border-bottom: 0;
+    padding: 0.5rem 0 0.5rem 0.75rem;
+    background: rgba(42, 42, 62, 0.3);
+    border-radius: 0 0.5rem 0.5rem 0;
+  }
+  .markdown-content tbody tr:nth-child(even) { background: rgba(42, 42, 62, 0.5); }
+  .markdown-content td {
+    display: block;
+    border: 0;
+    padding: 0.2rem 0;
+  }
+}
+.markdown-content img { max-width: 100%; border-radius: 0.5rem; }
+
+/* Collapsible details (troubleshooting accordions) */
+.markdown-content details {
+  margin: 0.75rem 0;
+  border: 1px solid var(--color-surface-lighter);
+  border-radius: 0.5rem;
+  background: var(--color-surface-light);
+  overflow: hidden;
+}
+.markdown-content details[open] {
+  background: rgba(42, 42, 62, 0.6);
+}
+.markdown-content summary {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none;
+  color: var(--color-text);
+  user-select: none;
+  position: relative;
+  padding-left: 2rem;
+}
+.markdown-content summary::-webkit-details-marker { display: none; }
+.markdown-content summary::before {
+  content: '▸';
+  position: absolute;
+  left: 0.875rem;
+  color: var(--color-primary-light);
+  transition: transform 0.15s ease;
+}
+.markdown-content details[open] > summary::before { transform: rotate(90deg); }
+.markdown-content summary:hover { background: rgba(137, 180, 250, 0.08); }
+.markdown-content details > *:not(summary) { padding-left: 1rem; padding-right: 1rem; }
+.markdown-content details > *:last-child { padding-bottom: 0.75rem; }
+
+/* Deep-link auto-expand: when URL hash matches a details element, open it */
+.markdown-content details:target { background: rgba(137, 180, 250, 0.12); }
+.markdown-content details:target[open] { background: rgba(137, 180, 250, 0.08); }
+
+/* Shiki (rehype-pretty-code) token colors ride on the theme; we only
+   neutralize the wrapper so our CodeBlock card provides visual container */
+.markdown-content pre [data-line] { display: block; }
+.markdown-content pre code { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+.markdown-content pre code [data-line] { padding: 0 0.25rem; }
+
+/* Print — expand all details for PDF export */
+@media print {
+  .markdown-content details { break-inside: avoid; }
+  .markdown-content details:not([open]) > *:not(summary) { display: revert !important; }
+  .markdown-content details > summary::before { content: ''; }
+  .markdown-content details > *:not(summary) { display: block !important; }
+  .markdown-content pre { white-space: pre-wrap; word-break: break-word; }
+  aside, button, header { display: none !important; }
+  .markdown-content { font-size: 11pt; }
+}

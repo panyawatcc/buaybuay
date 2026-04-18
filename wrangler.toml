@@ -1,0 +1,114 @@
+########################################################################
+# adbot-ai-product — SELF-HOST (CF Deploy Button) Cloudflare Pages config
+#
+# THIS FILE IS FOR SELF-HOST CUSTOMERS, NOT GOLF'S PRODUCTION DEPLOY.
+# Golf's production uses `wrangler.toml` (with his real D1+KV IDs).
+#
+# Customer install flow via CF Deploy Button:
+#   1. Customer clicks https://deploy.workers.cloudflare.com/?url=<this-repo>&branch=master
+#   2. CF forks this repo to customer's GitHub
+#   3. CF reads this file (once renamed to `wrangler.toml` per rename step below)
+#   4. CF auto-provisions D1 + KV in customer's CF account (placeholder IDs below are ignored)
+#   5. CF deploys Pages project → customer has a live self-host instance
+#   6. Customer sets 7 required secrets via Pages Dashboard OR `wrangler pages secret put`
+#      (see list at bottom; no prompt flow in Deploy Button v1)
+#
+# For Deploy Button to use THIS file instead of Golf's `wrangler.toml`, the
+# public/template repo should either:
+#   (a) rename this file → `wrangler.toml` at the root of the customer-forked repo, OR
+#   (b) use a separate branch whose wrangler.toml IS this file's content
+#
+# Either way, the placeholder IDs below (all-zeros) signal CF Deploy Button that
+# these resources should be newly-provisioned in the customer's account, not
+# referenced by ID. If CF instead tries to attach to these placeholders, it will
+# fail loudly (404 on a zero UUID) — the test-must-fail-first RED state.
+#
+# DEVOPS-drafted 2026-04-19 per PLANNER dispatch (Quick Install Path A, B2 fix).
+########################################################################
+
+name = "buaybuay"                       # customer: change to your own project slug if desired
+compatibility_date = "2025-03-28"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "dist"
+
+[observability]
+enabled = true
+
+# ─── D1 — users, rules, bot_actions, audit history ───
+# Placeholder ID — CF Deploy Button creates a NEW D1 named `adbot-ai-db` in the
+# customer's account and replaces this value before first deploy. If CF instead
+# tries to resolve the zero UUID, expect a 404 and treat it as a hard blocker.
+[[d1_databases]]
+binding = "DB"
+database_name = "buaybuay"
+database_id = "457ebf6f-e982-46ea-9570-52b879277216"  # CF auto-provisions — do not edit
+
+# ─── KV — OAuth CSRF state + rate-limit counters ───
+# Placeholder ID — same semantics as D1 above.
+[[kv_namespaces]]
+binding = "STATE_KV"
+id = "70b69b712d1a4e66ab4a5de6e281bd76"  # CF auto-provisions — do not edit
+
+# ─── Optional — Cloudflare Queues for AI feature async work ───
+# Only needed if you run the ai-features-consumer/ worker. Comment out if
+# not using. Create with: bunx wrangler queues create ai-features-queue
+# [[queues.producers]]
+# binding = "AI_FEATURES_QUEUE"
+# queue = "ai-features-queue"
+
+# ─── Cron Triggers ───
+# NOTE: CF Pages does NOT support [triggers] in wrangler config (Workers-only).
+# Daily heartbeat is handled by one of:
+#   1. CF Pages Dashboard → Settings → Functions → Cron Triggers (manual, per-customer)
+#   2. External scheduler POSTing to /api/cron/heartbeat (CRON_SECRET-gated)
+#   3. Golf's brain-side cron (upstream, runs regardless of customer deployment)
+# Customer can safely skip this on first deploy — license works fine without it.
+
+# ─── Plain env vars ───
+# ADBOT_BRAIN_URL points at Golf's hosted brain. Customers share one brain; they
+# don't need to deploy their own. If Golf ever stands up a staging brain, flip
+# this to the staging URL in the public template for smoke deploys only.
+[vars]
+ADBOT_BRAIN_URL = "https://adbot-ai-brain.golfservera.workers.dev"
+
+# ADBOT_DOMAIN must be set per-deployment (customer's own Pages subdomain).
+# Can be set via:
+#   - Pages Dashboard → Settings → Environment Variables → Production (plain)
+#   - `wrangler pages secret put ADBOT_DOMAIN` (secret)
+# Either works — brain reads it via process.env just the same.
+
+########################################################################
+# Required secrets (customer sets 7 of these post-deploy before first use):
+#
+#   ADBOT_LICENSE_JWT      - The license JWT Golf sends after purchase.
+#                            Without this, /api/license/status returns misconfigured
+#                            and every /api/* route returns 402 license_required.
+#
+#   ADBOT_DOMAIN           - Customer's CF Pages public subdomain (e.g. abc-ads.pages.dev).
+#                            MUST match the `domain` claim of the license JWT.
+#
+#   FB_APP_ID              - Facebook App ID (digits).
+#   FB_APP_SECRET          - Facebook App Secret (32-char hex).
+#   FB_REDIRECT_URI        - https://<your-domain>/api/auth/callback.
+#                            Must be whitelisted in Meta Dev Console → App Settings →
+#                            Facebook Login → Valid OAuth Redirect URIs.
+#
+#   JWT_SECRET             - Random 64-char hex string (generate: openssl rand -hex 32)
+#   TOKEN_ENCRYPTION_KEY   - Random 64-char hex string (same generation method)
+#
+#   PUBLIC_ORIGIN          - https://<your-domain> (used for CORS on ad image proxy)
+#
+# Push via Pages Dashboard OR CLI:
+#   bunx wrangler pages secret put <NAME> --project-name=<your-project-name>
+#
+# Optional (AI + telegram + email — customer can add later):
+#   ANTHROPIC_API_KEY, CRON_SECRET,
+#   TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, TELEGRAM_WEBHOOK_SECRET,
+#   RESEND_API_KEY,
+#   LLM_DISABLED, LLM_ALLOWED_MODELS, LLM_MAX_INPUT_TOKENS,
+#   LLM_GLOBAL_DAILY_COST_USD_MICRO, LLM_GLOBAL_HOURLY_COST_USD_MICRO,
+#   LLM_USER_DAILY_LIMIT, LLM_USER_HOURLY_LIMIT
+#
+# Do NOT set these in self-host deployments (dev endpoints are stripped):
+#   DEV_TOKEN_INJECT, DEV_TRIGGER_ENABLED, DEBUG_RULES
+########################################################################

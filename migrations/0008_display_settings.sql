@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS display_settings (
+  user_id TEXT PRIMARY KEY,
+  currency TEXT NOT NULL DEFAULT 'USD',
+  exchange_rate REAL NOT NULL DEFAULT 35.0,
+  show_original INTEGER NOT NULL DEFAULT 1,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);

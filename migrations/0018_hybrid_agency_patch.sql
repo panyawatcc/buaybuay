@@ -1,0 +1,35 @@
+-- 0018_hybrid_agency_patch.sql
+-- Idempotency patch for 0017 per DEVOPS apply report.
+--
+-- 0017 conflicts observed on live D1:
+--   1) users.role ALREADY EXISTS (TEXT NOT NULL DEFAULT 'viewer') — added
+--      outside migration history. 0017's ALTER TABLE ADD COLUMN role failed.
+--   2) users.fb_user_id DOESN'T EXIST on live D1 — despite 0001_init_users.sql
+--      declaring it. Schema drift between the versioned migration and the
+--      deployed table. 0017's INSERT...SELECT referenced fb_user_id → failed.
+--      Net effect: the backfill row was never inserted.
+--
+-- Decisions:
+--   - role column: LEAVE AS-IS. Pre-existing default 'viewer' is compatible
+--     with getFbContext — the non-admin branch treats viewer as a customer
+--     (no FB access until ad_accounts rows exist). Only admin@test.com needs
+--     to be flipped to 'admin' explicitly.
+--   - fb_user_id column: NOT a new column. The spec treats it as live data
+--     that gets captured when admin connects FB (POST /api/auth/fb/connect
+--     → app code reads GET /me → writes to admin_fb_tokens.fb_user_id). No
+--     schema change here — admin_fb_tokens.fb_user_id stays NOT NULL because
+--     app-level INSERT will always have it in hand.
+--   - Backfill: the original SELECT...FROM users was guarded on fb_token
+--     being present. Admin doesn't yet have an fb_token stored, so the row
+--     would have been 0 anyway. Re-running when admin connects is handled
+--     by the existing upsertPagesFromUserToken flow (when wired for admin).
+--
+-- So this patch's only authoritative action is to ensure admin@test.com's
+-- role is 'admin' even if the column was seeded with 'viewer' before.
+
+UPDATE users SET role = 'admin' WHERE email = 'admin@test.com';
+
+-- Verification query (no-op; kept as documentation):
+--   SELECT id, email, role FROM users WHERE email = 'admin@test.com';
+--   SELECT COUNT(*) FROM admin_fb_tokens;   -- 0 until admin connects FB
+--   SELECT COUNT(*) FROM ad_accounts;       -- 0 until first customer verify

@@ -1,0 +1,31 @@
+name = "ai-features-consumer"
+main = "src/index.ts"
+compatibility_date = "2025-03-28"
+compatibility_flags = ["nodejs_compat"]
+
+# Queue-only Worker — no HTTP routes needed. Disable workers.dev subdomain so
+# deploy doesn't require onboarding click-through.
+workers_dev = false
+
+# Observability — surface console.log in `wrangler tail` + dashboard.
+[observability]
+enabled = true
+
+# Consumer for ai-features-queue. After `max_retries` exhausts, messages flow
+# to ai-features-dlq (inspect via `wrangler queues consumer peek ai-features-dlq`).
+# BACKEND SI-5 will flesh out the handler — this scaffold just ACKs + logs.
+[[queues.consumers]]
+queue = "ai-features-queue"
+max_batch_size = 10          # messages per batch
+max_batch_timeout = 30       # seconds to wait before flushing partial batch
+max_retries = 3              # per message before DLQ
+dead_letter_queue = "ai-features-dlq"
+max_concurrency = 5          # parallel invocations
+
+# Service bindings for consumer to talk back to Pages app D1 / secrets go here
+# once BACKEND wires actual feature handlers.
+# Example:
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "ad-scaler-users"
+# database_id = "b9358249-425a-4252-ad42-33d7aeac2392"
